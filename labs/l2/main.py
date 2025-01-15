@@ -17,7 +17,10 @@ def main():
 	X = [] # initialize data matrix 
 
 	files = os.listdir(PATH)
-	for f in files[1:]: # ignore README
+	for f in files:
+
+		if f.endswith('.txt'):
+			continue # skip the read me file 
 
 		img = Image.open(f'{PATH}/{f}')
 		img = img.resize((40,40)) # convert to 40x40 resolution 
