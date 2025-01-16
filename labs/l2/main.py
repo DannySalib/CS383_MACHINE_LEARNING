@@ -7,6 +7,7 @@ import os
 import numpy as np 
 from PIL import Image
 import MyUtil
+import matplotlib.pyplot as plt
 
 PATH = './yalefaces'
 
@@ -52,18 +53,46 @@ def main():
 	W = eigenvectors[:, :2]
 	Z = X @ W 
 
+	# Plot resulting matrix 
+	MyUtil.plot_matrix(Z, 'PCA (2D) Data')
+
+	# project subject02.centerlight onto the k most important principle components
+	matrix = Image.open(f'{PATH}/subject02.centerlight')
+	matrix = matrix.resize((40, 40))
+	
+	# Save initial image
+	plt.figure()
+	plt.imshow(matrix)
+	plt.savefig('initial.png')
+	
+	matrix = np.asmatrix(matrix.getdata(),dtype=np.float64) # flatten 
+	# Zero mean image 
+	matrix_mean = np.mean(matrix)
+	matrix = matrix - matrix_mean
+	
 #	Determines the smallest k such that the k largest eigenvalues constitute at least 95% of the
 #	eigenvalues.
 #	is_
 	cumulative_sum = np.cumsum(eigenvalues)
 	total_sum = np.sum(eigenvalues)
 	threshold = 0.95 * total_sum
+	# Dimensionality = k
 	k = np.searchsorted(cumulative_sum, threshold) + 1  # +1 because indices are 0-based
+	W = eigenvectors[:, :k]
 
-	print(k)
+	Z = np.dot(matrix, W)
+	
+	Xhat = Z @ W.T
 
-	# Plot initial matrix 
-	MyUtil.plot_matrix(Z, 'PCA (2D) Data')
+	# Undo zero mean and convert to 40x40 image 
+	Xhat += matrix_mean
+	Xhat = Xhat.reshape((40, 40))
+
+	# Save result
+	plt.figure()
+	plt.imshow(Xhat)
+	plt.savefig('result.png')
+
 	
 if __name__ == '__main__':
 	main()
