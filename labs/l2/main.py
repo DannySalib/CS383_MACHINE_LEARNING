@@ -6,7 +6,6 @@
 import os 
 import numpy as np 
 from PIL import Image
-import matplotlib.pyplot as plt 
 import MyUtil
 
 PATH = './yalefaces'
@@ -35,8 +34,34 @@ def main():
 	# Plot initial matrix 
 	MyUtil.plot_matrix(X, 'Initial Data')
 
-	Z = MyUtil.PCA(X, k=2)	# 2D representation of data
+		# Reduce the data to 2D using PCA 
+	# Zero mean data 
+	X = X - np.mean(X)
+
+	# Calculate covariance 
+	Sigma = np.cov(X, rowvar=False)
 	
+	# Calculate eigen values
+	# 	find k eigenvectors wth the top kth highest eigen values
+	eigenvalues, eigenvectors = np.linalg.eigh(Sigma)
+	sorted_indices = np.argsort(eigenvalues)[::-1]
+	eigenvalues = eigenvalues[sorted_indices]
+	eigenvectors = eigenvectors[:, sorted_indices]
+
+	# reduce to k = D = 2 
+	W = eigenvectors[:, :2]
+	Z = X @ W 
+
+#	Determines the smallest k such that the k largest eigenvalues constitute at least 95% of the
+#	eigenvalues.
+#	is_
+	cumulative_sum = np.cumsum(eigenvalues)
+	total_sum = np.sum(eigenvalues)
+	threshold = 0.95 * total_sum
+	k = np.searchsorted(cumulative_sum, threshold) + 1  # +1 because indices are 0-based
+
+	print(k)
+
 	# Plot initial matrix 
 	MyUtil.plot_matrix(Z, 'PCA (2D) Data')
 	
